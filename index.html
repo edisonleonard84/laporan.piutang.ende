@@ -692,6 +692,7 @@
             <div class="surat-date" id="suratTanggal">Ende, -</div>
             <div>Kepada Yth</div>
             <div>Pimpinan <span id="suratNamaKorporat">-</span></div>
+            <div>Ende</div>
             <div>di tempat</div>
         </div>
     </div>
@@ -1075,18 +1076,19 @@
 
         document.getElementById('buttonBukaSpreadsheet').style.display = isSuper ? 'inline-flex' : 'none';
         // debug-panel removed
-        document.getElementById('panelIdKorporat').style.display = (isSuper || isAdmin) ? 'block' : 'none';
-        document.getElementById('panelBulan').style.display = (isSuper || isAdmin) ? 'block' : 'none';
-        document.getElementById('panelTahun').style.display = (isSuper || isAdmin) ? 'block' : 'none';
+        document.getElementById('panelIdKorporat').style.display = (isSuper || isAdmin || isUser) ? 'block' : 'none';
+        document.getElementById('panelBulan').style.display = (isSuper || isAdmin || isUser) ? 'block' : 'none';
+        document.getElementById('panelTahun').style.display = (isSuper || isAdmin || isUser) ? 'block' : 'none';
         document.getElementById('panelNomorSurat').style.display = (isSuper || isAdmin) ? 'block' : 'none';
         document.getElementById('btnPrint').style.display = (isSuper || isAdmin) ? 'inline-flex' : 'none';
-        document.getElementById('btnWA').style.display = isSuper ? 'inline-flex' : 'none';
+        document.getElementById('btnWA').style.display = (isSuper || isAdmin) ? 'inline-flex' : 'none';
+        document.getElementById('btnExportExcel').style.display = (isSuper || isAdmin) ? 'inline-flex' : 'none';
         document.getElementById('btnLogout').style.display = isLoggedIn ? 'inline-flex' : 'none';
         document.getElementById('btnUploadCsv').style.display = isLoggedIn ? 'inline-flex' : 'none';
 
         const reportContainer = document.querySelector('.report-container');
         const suratContainer = document.querySelector('.surat-container');
-        const showAppContent = isSuper || isAdmin;
+        const showAppContent = isSuper || isAdmin || isUser;
         if (reportContainer) reportContainer.style.display = showAppContent ? 'block' : 'none';
         if (suratContainer) suratContainer.style.display = showAppContent ? 'block' : 'none';
 
@@ -1143,9 +1145,8 @@
             updateRoleUI();
             showLandingOverlay();
 
-            if (currentRole !== USER_ROLES.USER) {
-                await ambilDataDariSheets();
-            }
+            // Always fetch data for all roles including USER
+            await ambilDataDariSheets();
         } catch (err) {
             console.error(err);
             showLoginError('Terjadi kesalahan saat login.');

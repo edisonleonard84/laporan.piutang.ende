@@ -399,7 +399,7 @@
         .editable-print {
             min-width: 120px;
             display: inline-block;
-            border-bottom: 1px dotted #888;
+            /* border-bottom: 1px dotted #888; */
             outline: none;
         }
         .surat-edit-input {
@@ -438,6 +438,8 @@
             body.print-page-1 .report-container { display: block !important; }
             body.print-page-2 .report-container { display: none !important; }
             body.print-page-2 .surat-container { display: block !important; page-break-before: auto; }
+            /* Hide additional page (page 3) when printing only page 2 */
+            body.print-page-2 .additional-page, body.print-page-2 #additionalPage { display: none !important; }
             
             .header-title { padding: 6px 4px; font-size: 10pt; margin-bottom: 8px; background-color: #ffee55 !important; color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .header-meta-grid { margin-top: 6px; font-size: 8pt; row-gap: 1px; }
@@ -684,8 +686,8 @@
 
     <div class="surat-top-grid">
         <div class="surat-meta">
-            <div>Nomor</div><div>:</div><div><input type="text" id="suratNomor" class="surat-edit-input" value="/Penjualan/Korporat/0326"></div>
-            <div>Lampiran</div><div>:</div><div><strong><span id="suratLampiran">1 (satu) berkas</span></strong></div>
+            <div>Nomor</div><div>:</div><div id="suratNomor" class="editable-print">/Penjualan/Korporat/0326</div>
+            <div>Lampiran</div><div>:</div><div><span id="suratLampiran">1 (satu) berkas</span></div>
             <div>Perihal</div><div>:</div><div><strong>Tagihan Biaya Pengiriman&nbsp; Dokumen & Paket<br>Bulan <span id="suratPeriodePerihal">-</span></strong></div>
         </div>
         <div class="surat-address">
@@ -1184,7 +1186,7 @@
         const noSurat = cariNoSurat(targetIdPelanggan);
         const namaKorporat = globalNamaKorporat || "-";
         const saldoAkhir = waSummary.saldoAkhirNum || 0;
-        document.getElementById("suratNomor").value = nomorSurat;
+        document.getElementById("suratNomor").innerText = nomorSurat;
         document.getElementById("suratTanggal").innerText = formatTanggalAkhirBulan(bulanDipilih, tahunDipilih);
         document.getElementById("suratPeriodePerihal").innerText = `${kapitalAwalKalimat(namaBulanIndo[bulanDipilih].toLowerCase())} ${tahunDipilih}`;
         document.getElementById("suratNamaKorporat").innerText = namaKorporat;

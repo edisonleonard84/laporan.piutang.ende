@@ -32,6 +32,14 @@
             font-size: 15px;   /* Ukuran logo ikon di dalam tombol */
             font-weight: bold;
         }
+        .btn-custom-icon.dropdown-toggle {
+            width: auto;
+            padding: 0 12px;
+            min-width: 42px;
+        }
+        .btn-custom-icon.dropdown-toggle::after {
+            margin-left: 0.35rem;
+        }
         .btn-custom-icon:active {
             transform: scale(0.95);
         }
@@ -167,7 +175,7 @@
         .ttd-nama { font-weight: bold; text-decoration: underline; margin-bottom: 2px; text-transform: uppercase; }
         .nippos-text { margin: 0; font-size: 11px; color: #555; }
         
-        .debug-panel { max-width: 750px; margin: 20px auto; padding: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; }
+        /* debug-panel removed */
 
         .login-overlay {
             position: fixed;
@@ -411,7 +419,7 @@
             @page { size: A4 portrait; margin: 8mm 12mm 8mm 12mm; }
             *, *::before, *::after { box-sizing: border-box; }
             body { background-color: #fff; font-size: 8pt; line-height: 1.15; color: #000; padding: 0; margin: 0; width: 100%; }
-            .control-panel, .debug-panel, .no-print, .toast-container { display: none !important; }
+            .control-panel, .no-print, .toast-container { display: none !important; }
             .report-container { box-shadow: none; margin: 0; padding: 0; width: 100% !important; max-width: 100% !important; min-width: 100% !important; }
             .surat-container { box-shadow: none; margin: 0; padding: 0; width: 100% !important; min-height: auto; font-size: 10.5pt; page-break-before: always; }
             .surat-header { grid-template-columns: 1fr 22mm; margin-bottom: 10mm; }
@@ -493,7 +501,7 @@
     <div class="landing-card">
         <img class="landing-logo" src="https://lh3.googleusercontent.com/d/1ZxgZGywNjf2vICtCMUE7KYFPS9ltAwlL" alt="POS IND Logo">
         <div class="landing-title">LAPORAN PIUTANG KC ENDE 86300</div>
-        <div class="landing-subtitle">Selamat datang di sistem pelaporan dan surat jalan.</div>
+        <div class="landing-subtitle">Selamat Datang di Sistem Pelaporan Piutang.</div>
         <div class="landing-user">Hai, <span id="landingUserName"></span></div>
         <div class="landing-text">Menu ini membantu Anda mengakses ringkasan piutang, mengatur nomor surat, dan melihat data korporat dengan mudah. Ketuk Mulai untuk melanjutkan ke aplikasi.</div>
         <button class="btn btn-primary" type="button" onclick="startApplication()">Mulai</button>
@@ -501,19 +509,24 @@
     </div>
 </div>
 
+<!-- Additional Page (will be inserted under Surat) -->
+
+
+
 <div id="appContent" style="display:none;">
 <div class="control-panel no-print">
         
         <div class="d-flex flex-grow-1 flex-wrap gap-2">
             <div id="panelIdKorporat" style="flex: 2; min-width: 180px;">
                 <label for="selectIdPelanggan" class="form-label font-weight-bold mb-1">Pilih ID Korporat:</label>
-                <select id="selectIdPelanggan" class="form-select form-select-sm" onchange="renderTabel()">
+                <select id="selectIdPelanggan" class="form-select form-select-sm" onchange="renderTabel(); populateAdditionalTable()">
                     <option value="">Memuat data...</option>
                 </select>
             </div>
+            
             <div id="panelBulan" style="flex: 1; min-width: 100px;">
                 <label for="selectBulan" class="form-label font-weight-bold mb-1">Pilih Bulan:</label>
-                <select id="selectBulan" class="form-select form-select-sm" onchange="renderTabel()">
+                <select id="selectBulan" class="form-select form-select-sm" onchange="renderTabel(); populateAdditionalTable()">
                     <option value="0">Januari</option>
                     <option value="1">Februari</option>
                     <option value="2">Maret</option>
@@ -530,7 +543,7 @@
             </div>
             <div id="panelTahun" style="flex: 1; min-width: 80px;">
                 <label for="inputTahun" class="form-label font-weight-bold mb-1">Tahun:</label>
-                <input type="number" id="inputTahun" class="form-control form-control-sm" value="2026" min="2000" max="2100" onchange="renderTabel()">
+                <input type="number" id="inputTahun" class="form-control form-control-sm" value="2026" min="2000" max="2100" onchange="renderTabel(); populateAdditionalTable()">
             </div>
             <div id="panelNomorSurat" style="flex: 1; min-width: 200px;">
                 <label for="inputNomorSurat" class="form-label font-weight-bold mb-1">Nomor Surat:</label>
@@ -545,15 +558,18 @@
             <button id="btnUploadCsv" class="btn-custom-icon btn-upload-icon" onclick="document.getElementById('csvInput').click()" title="Upload CSV">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
             </button>
-            <div id="panelPrintTarget" style="display: inline-block;">
-                <select id="selectPrintTarget" class="form-select form-select-sm" style="width: 116px;" title="Pilihan Print">
-                    <option value="both">Print Semua</option>
-                    <option value="page1">Page 1</option>
-                    <option value="page2">Page 2</option>
-                </select>
+            <div class="btn-group">
+                <button id="btnPrint" type="button" class="btn-custom-icon btn-print-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Cetak Laporan">
+                    <i class="fa-solid fa-print"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" onclick="cetakKePdf('both'); return false;">Print Semua</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="cetakKePdf('page1'); return false;">Page 1</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="cetakKePdf('page2'); return false;">Page 2</a></li>
+                </ul>
             </div>
-            <button id="btnPrint" class="btn-custom-icon btn-print-icon" onclick="cetakKePdf()" title="Cetak Laporan">
-                <i class="fa-solid fa-print"></i>
+            <button id="btnExportExcel" class="btn-custom-icon btn-sheets-icon" onclick="exportAdditionalToCSV()" title="Export Excel">
+                <i class="fa-solid fa-file-export"></i>
             </button>
             <button id="btnWA" class="btn-custom-icon btn-wa-icon" onclick="kirimKeWhatsApp()" title="Kirim WA">
                 <i class="fa-brands fa-whatsapp"></i>
@@ -676,7 +692,6 @@
             <div class="surat-date" id="suratTanggal">Ende, -</div>
             <div>Kepada Yth</div>
             <div>Pimpinan <span id="suratNamaKorporat">-</span></div>
-            <div>Ende</div>
             <div>di tempat</div>
         </div>
     </div>
@@ -732,32 +747,42 @@
             <div class="surat-underline">Hannan</div>
             <div>Nippos.983390370</div>
         </div>
-    </div>
+        </div>
 </div>
 
-<div id="debug-panel" class="debug-panel no-print">
-    <h6>🛠️ Panel Sampel Data Cloud (Pengecekan Tgl Asli)</h6>
-    <table class="table table-bordered table-sm" style="font-size: 11px; background-color: #fff; margin-bottom: 0;">
-        <thead>
-            <tr class="table-secondary">
-                <th>ID Korporat (DB)</th>
-                <th>Nama Korporat (DB)</th>
-                <th>Tgl Trx (Format DB)</th>
-                <th>Trx (Item)</th>
-                <th>Total (Biaya)</th>
-            </tr>
-        </thead>
-        <tbody id="debugTableBody">
-            <tr><td colspan="5" class="text-center text-danger">Belum ada data...</td></tr>
-        </tbody>
-    </table>
-</div>
+<!-- Additional Page -->
+<div id="additionalPage" class="additional-page" style="max-width:1024px; margin: 18px auto;">
+    <div class="additional-card">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5>Daftar Pendapatan & Pajak</h5>
+            <div></div>
+        </div>
+        <div class="table-responsive mt-3">
+            <table class="additional-table table table-sm">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Tanggal Transaksi</th>
+                        <th>No.Doc (SAP)</th>
+                        <th>NPWP</th>
+                        <th>NAMA MITRA</th>
+                        <th>ALAMAT</th>
+                        <th>Keterangan</th>
+                        <th class="text-num">PENDAPATAN</th>
+                        <th class="text-num">DPP</th>
+                        <th class="text-num">PPN</th>
+                    </tr>
+                </thead>
+                <tbody id="additionalTableBody"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFmhiDDAwOVtVaSPY_XQr3WKymem_6S8i-LwbBECxELUxdFKNXp0PBDDbQTiUhIKUkYg/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPUxnlM0vAlkmXZnCgDEfAwLPdlqTURiRnzs0apNSZ5d2_7geCC2LgG7zZNKsOzxJzjQ/exec";
     const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1wMYjpJDuQjcfDhJZgOamkgxt75e1tkeyutyv8P0cq7c/edit?usp=sharing";
     
     const USER_ROLES = {
@@ -908,6 +933,114 @@
         if (overlay) overlay.style.display = 'flex';
     }
 
+
+    function parseNumberForCalc(val) {
+        if (!val && val !== 0) return 0;
+        const cleaned = (val || '').toString().replace(/[^0-9.-]/g, '');
+        return parseFloat(cleaned) || 0;
+    }
+
+    function populateAdditionalTable() {
+        const tbody = document.getElementById('additionalTableBody');
+        tbody.innerHTML = '';
+        const targetId = document.getElementById('selectIdPelanggan').value.trim().toUpperCase();
+        const bulanDipilih = parseInt(document.getElementById('selectBulan').value);
+        const tahunDipilih = parseInt(document.getElementById('inputTahun').value);
+        const data = Array.isArray(cloudData.laporanUtama) ? cloudData.laporanUtama : [];
+        const rows = data.filter(r => {
+            if (!r.idPelanggan) return false;
+            if (r.idPelanggan.toString().trim().toUpperCase() !== targetId) return false;
+            const dt = parseTanggal(r.tglTrx);
+            if (!dt) return false;
+            return dt.getMonth() === bulanDipilih && dt.getFullYear() === tahunDipilih;
+        });
+        // sort by date
+        rows.sort((a,b) => {
+            const da = parseTanggal(a.tglTrx) || new Date(0);
+            const db = parseTanggal(b.tglTrx) || new Date(0);
+            return da - db;
+        });
+
+        rows.forEach((row, idx) => {
+            const nomor = idx + 1;
+            const tanggal = row.tglTrx || '';
+            const nama = row.namaKorporat || '';
+            const pendapatanNum = parseNumberForCalc(row.total);
+            const dpp = pendapatanNum * (100/111);
+            const ppn = dpp * 0.11;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${nomor}</td>
+                <td>${tanggal}</td>
+                <td><input class="form-control form-control-sm" data-field="nodoc" value=""></td>
+                <td><input class="form-control form-control-sm" data-field="npwp" value=""></td>
+                <td>${escapeHtml(nama)}</td>
+                <td><input class="form-control form-control-sm" data-field="alamat" value=""></td>
+                <td><input class="form-control form-control-sm" data-field="keterangan" value=""></td>
+                <td class="text-num">${formatNumber(pendapatanNum)}</td>
+                <td class="text-num">${formatNumber(dpp)}</td>
+                <td class="text-num">${formatNumber(ppn)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if (rows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">Tidak ada data untuk ID terpilih.</td></tr>';
+        }
+    }
+
+    function exportAdditionalToCSV() {
+        const rows = [];
+        const header = ['No','Tanggal Transaksi','No.Doc (SAP)','NPWP','NAMA MITRA','ALAMAT','Keterangan','PENDAPATAN','DPP','PPN'];
+        rows.push(header);
+        const tbody = document.getElementById('additionalTableBody');
+        if (!tbody) return;
+        const trList = tbody.querySelectorAll('tr');
+        trList.forEach(tr => {
+            const cells = tr.children;
+            if (!cells || cells.length < 10) return;
+            const no = cells[0].innerText.trim();
+            const tanggal = cells[1].innerText.trim();
+            const nodoc = (cells[2].querySelector('input') || {}).value || '';
+            const npwp = (cells[3].querySelector('input') || {}).value || '';
+            const nama = cells[4].innerText.trim();
+            const alamat = (cells[5].querySelector('input') || {}).value || '';
+            const keterangan = (cells[6].querySelector('input') || {}).value || '';
+            const pendapatan = parseNumberForCalc(cells[7].innerText || cells[7].textContent);
+            const dpp = parseNumberForCalc(cells[8].innerText || cells[8].textContent);
+            const ppn = parseNumberForCalc(cells[9].innerText || cells[9].textContent);
+            rows.push([no,tanggal,nodoc,npwp,nama,alamat,keterangan,pendapatan,dpp,ppn]);
+        });
+
+        if (rows.length <= 1) { alert('Tidak ada data untuk diekspor.'); return; }
+
+        const csvContent = rows.map(r => r.map(cell => '"' + String(cell).replace(/"/g,'""') + '"').join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const id = document.getElementById('selectIdPelanggan').value || 'ID';
+        const bulan = document.getElementById('selectBulan').value;
+        const tahun = document.getElementById('inputTahun').value;
+        a.download = `halaman3_${id}_${bulan}_${tahun}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function formatNumber(num) {
+        return (Math.round((num || 0) * 100) / 100).toLocaleString('en-US');
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/[&<>"]+/g, function (s) {
+            return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]);
+        });
+    }
+
     function hideLandingOverlay() {
         const overlay = document.getElementById('landingOverlay');
         if (overlay) overlay.style.display = 'none';
@@ -941,12 +1074,11 @@
         const isLoggedIn = Boolean(currentUser);
 
         document.getElementById('buttonBukaSpreadsheet').style.display = isSuper ? 'inline-flex' : 'none';
-        document.getElementById('debug-panel').style.display = isSuper ? 'block' : 'none';
+        // debug-panel removed
         document.getElementById('panelIdKorporat').style.display = (isSuper || isAdmin) ? 'block' : 'none';
         document.getElementById('panelBulan').style.display = (isSuper || isAdmin) ? 'block' : 'none';
         document.getElementById('panelTahun').style.display = (isSuper || isAdmin) ? 'block' : 'none';
         document.getElementById('panelNomorSurat').style.display = (isSuper || isAdmin) ? 'block' : 'none';
-        document.getElementById('panelPrintTarget').style.display = (isSuper || isAdmin) ? 'inline-block' : 'none';
         document.getElementById('btnPrint').style.display = (isSuper || isAdmin) ? 'inline-flex' : 'none';
         document.getElementById('btnWA').style.display = isSuper ? 'inline-flex' : 'none';
         document.getElementById('btnLogout').style.display = isLoggedIn ? 'inline-flex' : 'none';
@@ -1082,8 +1214,6 @@ async function ambilDataDariSheets() {
             noSurat : result.noSurat || []
         };
 
-        tampilkanSampelDebug();
-
         populasiDropdownPelanggan();
 
         renderTabel();
@@ -1132,20 +1262,7 @@ async function ambilDataDariSheets() {
         });
     }
 
-    function tampilkanSampelDebug() {
-        const dBody = document.getElementById("debugTableBody");
-        if(!cloudData.laporanUtama || cloudData.laporanUtama.length === 0) return;
-        dBody.innerHTML = "";
-        cloudData.laporanUtama.slice(0, 4).forEach(row => {
-            dBody.insertAdjacentHTML('beforeend', `<tr>
-                <td><strong>${row.idPelanggan}</strong></td>
-                <td>${row.namaKorporat}</td>
-                <td class="text-success" style="font-weight:bold;">${row.tglTrx}</td>
-                <td>${row.trx}</td>
-                <td>${row.total}</td>
-            </tr>`);
-        });
-    }
+    // debug helper removed
 
     function renderTabel() {
         const bulanDipilih = parseInt(document.getElementById("selectBulan").value);
@@ -1295,13 +1412,13 @@ return (
         waSummary.biayaPackingNum = vPacking;
         waSummary.saldoAkhirNum = vSaldoAkhir;
         updateSuratTagihan();
+        try { populateAdditionalTable(); } catch(e) { console.warn('populateAdditionalTable failed', e); }
     }
 
-    function cetakKePdf() {
+    function cetakKePdf(printTarget = 'both') {
         const bulanDipilih = parseInt(document.getElementById("selectBulan").value);
         const tahunDipilih = parseInt(document.getElementById("inputTahun").value);
         const targetIdPelanggan = document.getElementById("selectIdPelanggan").value.trim().toUpperCase();
-        const printTarget = document.getElementById("selectPrintTarget").value;
         let mmStr = (bulanDipilih + 1) < 10 ? '0' + (bulanDipilih + 1) : (bulanDipilih + 1);
         const judulAsli = document.title;
         const suffix = printTarget === "page1" ? "Laporan" : (printTarget === "page2" ? "Surat_Tagihan" : "Laporan_dan_Surat");

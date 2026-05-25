@@ -1456,6 +1456,36 @@ return (
         let displayBiayaPacking = waSummary.biayaPackingNum > 0 ? waSummary.biayaPackingNum.toLocaleString('en-US') : "0";
         let displayTotalTagihan = totalTagihanBulanIni > 0 ? totalTagihanBulanIni.toLocaleString('en-US') : "0";
 
+        // find PIC numbers from No_surat sheet (cloudData.noSurat)
+        const noSurat = cariNoSurat(targetIdPelanggan) || {};
+        const pic1Raw = ambilFieldNoSurat(noSurat, ["pic_1","pic1","pic 1","pic-1","pic1_no","pic_1_no"]);
+        const pic2Raw = ambilFieldNoSurat(noSurat, ["pic_2","pic2","pic 2","pic-2","pic2_no","pic_2_no"]);
+
+        function normalizePhone(phone){
+            if(!phone) return null;
+            const raw = phone.toString().trim();
+            if(!raw) return null;
+
+            // try to find a +... or digit sequence that looks like a phone number
+            const plusMatch = raw.match(/\+?\d[\d\s\-()]{6,}\d/);
+            const digitsMatch = raw.match(/\d{8,}/);
+            let candidate = plusMatch ? plusMatch[0] : (digitsMatch ? digitsMatch[0] : null);
+            if(!candidate) return null;
+
+            // remove non-digit characters, keep leading + if present
+            candidate = candidate.replace(/[()\s\-]/g, '');
+            if(candidate.startsWith('+')) candidate = candidate.substring(1);
+            // convert leading 0 to country code 62
+            if(candidate.startsWith('0')) candidate = '62' + candidate.substring(1);
+            // ensure only digits remain
+            candidate = candidate.replace(/[^\d]/g, '');
+            if(!candidate) return null;
+            return candidate;
+        }
+
+        const pic1 = normalizePhone(pic1Raw === '-' ? '' : pic1Raw);
+        const pic2 = normalizePhone(pic2Raw === '-' ? '' : pic2Raw);
+
         const teksPesan = `Halo, kami dari *PT. POS INDONESIA (Persero)* \n` +
                           `*Kantor Pos Ende 86300*.\n\n` +
                           `*Nama Pelanggan:* ${globalNamaKorporat}\n` +
@@ -1472,10 +1502,44 @@ return (
                           `*BNI* :  54731889 an. DIVRE 8 KP ENDE\n` +
                           `*VA BNI* : 9885614886300813 an. 86300 ENDE\n` +
                           `*MANDIRI* : 161-0000-86300-6 an. POS INDONESIA\n\n` +
-                          `Bukti transfer harap dikirimkan kembali melalui nomor WhatsApp ini atau ke PIC *EDISON LEONARD*.\n` +
+                          `Bukti transfer harap dikirimkan kembali melalui nomor WhatsApp ini atau ke PIC an. *Edison Leonard*, Whatsapp: *081339221840.*\n` +
                           `Terima kasih.`;
 
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(teksPesan)}`, '_blank');
+        // prefer PIC1, fallback PIC2, otherwise open generic chat
+        try {
+            const waUrlPic1 = pic1 ? `https://api.whatsapp.com/send?phone=${pic1}&text=${encodeURIComponent(teksPesan)}` : null;
+            const waUrlPic2 = pic2 ? `https://api.whatsapp.com/send?phone=${pic2}&text=${encodeURIComponent(teksPesan)}` : null;
+            console.log('kirimKeWhatsApp -> waUrlPic1, waUrlPic2:', waUrlPic1, waUrlPic2);
+
+            if (waUrlPic1) {
+                const win = window.open(waUrlPic1, '_blank');
+                if (!win) {
+                    showToast('Popup diblokir. Klik tombol WA untuk membuka link.', 'warning');
+                    console.log('Popup blocked for waUrlPic1:', waUrlPic1);
+                }
+                return;
+            }
+            if (waUrlPic2) {
+                const win2 = window.open(waUrlPic2, '_blank');
+                if (!win2) {
+                    showToast('Popup diblokir. Klik tombol WA untuk membuka link.', 'warning');
+                    console.log('Popup blocked for waUrlPic2:', waUrlPic2);
+                }
+                return;
+            }
+
+            // fallback: open generic chat with message only
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksPesan)}`;
+            const win3 = window.open(waUrl, '_blank');
+            if (!win3) {
+                showToast('Popup diblokir. Klik tombol WA untuk membuka link.', 'warning');
+                console.log('Popup blocked for fallback waUrl:', waUrl);
+            }
+        } catch (e) {
+            console.error('kirimKeWhatsApp error opening WhatsApp URL', e);
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(teksPesan)}`;
+            window.open(waUrl, '_blank');
+        }
     }
 
     

@@ -174,8 +174,46 @@
         .ttd-space { height: 75px; } /* Tinggi standar spasi area tanda tangan fisik/stempel */
         .ttd-nama { font-weight: bold; text-decoration: underline; margin-bottom: 2px; text-transform: uppercase; }
         .nippos-text { margin: 0; font-size: 11px; color: #555; }
-        
+
+        /* PAGE NAV (Preview on screen) */
+        .page-nav-wrapper{
+            max-width: 750px;
+            margin: 0 auto 10px auto;
+            padding: 0 10px;
+        }
+        .page-nav{
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            background: #e9ecef;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 10px;
+            padding: 8px;
+        }
+        .page-toggle{
+            border: 1px solid #0d6efd;
+            background: #fff;
+            color: #0d6efd;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, transform 0.05s;
+        }
+        .page-toggle:active{ transform: scale(0.98); }
+        .page-toggle.active{
+            background: #0d6efd;
+            color: #fff;
+        }
+        .page-section{
+            display: none;
+        }
+        .page-section.active{
+            display: block;
+        }
         /* debug-panel removed */
+
 
         .login-overlay {
             position: fixed;
@@ -419,7 +457,8 @@
             @page { size: A4 portrait; margin: 8mm 12mm 8mm 12mm; }
             *, *::before, *::after { box-sizing: border-box; }
             body { background-color: #fff; font-size: 8pt; line-height: 1.15; color: #000; padding: 0; margin: 0; width: 100%; }
-            .control-panel, .no-print, .toast-container { display: none !important; }
+            .control-panel, .no-print, .toast-container, .page-nav, .page-toggle, .page-nav-wrapper { display: none !important; }
+
             .report-container { box-shadow: none; margin: 0; padding: 0; width: 100% !important; max-width: 100% !important; min-width: 100% !important; }
             .surat-container { box-shadow: none; margin: 0; padding: 0; width: 100% !important; min-height: auto; font-size: 10.5pt; page-break-before: always; }
             .surat-header { grid-template-columns: 1fr 22mm; margin-bottom: 10mm; }
@@ -596,8 +635,18 @@
 </div>
 </div>
 
+<div class="page-nav-wrapper no-print" aria-label="Navigasi Halaman Laporan">
+    <div class="page-nav" role="group">
+        <button type="button" id="btnPage1" class="page-toggle active" onclick="setActivePage(1)">Page 1</button>
+        <button type="button" id="btnPage2" class="page-toggle" onclick="setActivePage(2)">Page 2</button>
+        <button type="button" id="btnPage3" class="page-toggle" onclick="setActivePage(3)">Page 3</button>
+    </div>
+</div>
+
+<div class="page-section page-1 active">
 <div class="report-container">
     <div class="header-title">
+
         DAFTAR TRANSAKSI PENGIRIMAN SURAT DAN PAKET
         <div class="header-meta-grid">
             <div>Nama Pelanggan</div>
@@ -673,10 +722,14 @@
                 </td>
             </tr>
         </table>
-    </div>
+</div>
 </div>
 
+</div>
+
+<div class="page-section page-2">
 <div class="surat-container" id="suratTagihan">
+
     <div class="surat-header">
         <div>
             <img class="pos-logo-img" src="file:///E:/KORPORAT%20PROFILE/LOGO%20POSIND/PosIND_Main%20Color.png" alt="POS IND Logistik Indonesia">
@@ -753,8 +806,14 @@
         </div>
 </div>
 
+</div>
+
+</div>
+
+<div class="page-section page-3">
 <!-- Additional Page -->
 <div id="additionalPage" class="additional-page" style="max-width:1024px; margin: 18px auto;">
+
     <div class="additional-card">
         <div class="d-flex justify-content-between align-items-center">
             <h5>Daftar Pendapatan & Pajak</h5>
@@ -785,7 +844,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPUxnlM0vAlkmXZnCgDEfAwLPdlqTURiRnzs0apNSZ5d2_7geCC2LgG7zZNKsOzxJzjQ/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIfiWWwbK9OyN174HCwZensOgDF0iwmIYp7f1DuohfdGbHWpbHFLcxwTPUS83XoxTp7w/exec";
     const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1wMYjpJDuQjcfDhJZgOamkgxt75e1tkeyutyv8P0cq7c/edit?usp=sharing";
     
     const USER_ROLES = {
@@ -946,10 +1005,19 @@
     function populateAdditionalTable() {
         const tbody = document.getElementById('additionalTableBody');
         tbody.innerHTML = '';
+
         const targetId = document.getElementById('selectIdPelanggan').value.trim().toUpperCase();
         const bulanDipilih = parseInt(document.getElementById('selectBulan').value);
         const tahunDipilih = parseInt(document.getElementById('inputTahun').value);
+
         const data = Array.isArray(cloudData.laporanUtama) ? cloudData.laporanUtama : [];
+        const noSuratRows = Array.isArray(cloudData.noSurat) ? cloudData.noSurat : [];
+
+        // Ambil NPWP & ALAMAT dari sheet No_surat (lebih reliable untuk page 3)
+        const noSuratItem = noSuratRows.find(x => (x.idPelanggan || '').toString().trim().toUpperCase() === targetId) || {};
+        const npwpFromNoSurat = (noSuratItem.npwp || '').toString().trim();
+        const alamatFromNoSurat = (noSuratItem.alamat || '').toString().trim();
+
         const rows = data.filter(r => {
             if (!r.idPelanggan) return false;
             if (r.idPelanggan.toString().trim().toUpperCase() !== targetId) return false;
@@ -957,7 +1025,7 @@
             if (!dt) return false;
             return dt.getMonth() === bulanDipilih && dt.getFullYear() === tahunDipilih;
         });
-        // sort by date
+
         rows.sort((a,b) => {
             const da = parseTanggal(a.tglTrx) || new Date(0);
             const db = parseTanggal(b.tglTrx) || new Date(0);
@@ -968,6 +1036,11 @@
             const nomor = idx + 1;
             const tanggal = row.tglTrx || '';
             const nama = row.namaKorporat || '';
+
+            // fallback: dari laporanUtama jika No_surat kosong
+            const npwp = npwpFromNoSurat || row.npwp || '';
+            const alamat = alamatFromNoSurat || row.alamat || '';
+
             const pendapatanNum = parseNumberForCalc(row.total);
             const dpp = pendapatanNum * (100/111);
             const ppn = dpp * 0.11;
@@ -977,9 +1050,9 @@
                 <td>${nomor}</td>
                 <td>${tanggal}</td>
                 <td><input class="form-control form-control-sm" data-field="nodoc" value=""></td>
-                <td><input class="form-control form-control-sm" data-field="npwp" value=""></td>
+                <td><input class="form-control form-control-sm" data-field="npwp" value="${escapeHtml(npwp)}"></td>
                 <td>${escapeHtml(nama)}</td>
-                <td><input class="form-control form-control-sm" data-field="alamat" value=""></td>
+                <td><input class="form-control form-control-sm" data-field="alamat" value="${escapeHtml(alamat)}"></td>
                 <td><input class="form-control form-control-sm" data-field="keterangan" value=""></td>
                 <td class="text-num">${formatNumber(pendapatanNum)}</td>
                 <td class="text-num">${formatNumber(dpp)}</td>
@@ -1736,7 +1809,29 @@ window.onload = () => {
     showLoginOverlay();
     const usernameInput = document.getElementById('loginUsername');
     if (usernameInput) usernameInput.focus();
+
+    // default page (preview)
+    setActivePage(1);
 };
+
+function setActivePage(pageNumber){
+    const pages = document.querySelectorAll('.page-section');
+    pages.forEach(p => {
+        p.classList.remove('active');
+    });
+
+    const target = document.querySelector(`.page-section.page-${pageNumber}`);
+    if(target){
+        target.classList.add('active');
+    }
+
+    const b1 = document.getElementById('btnPage1');
+    const b2 = document.getElementById('btnPage2');
+    const b3 = document.getElementById('btnPage3');
+    if(b1) b1.classList.toggle('active', pageNumber === 1);
+    if(b2) b2.classList.toggle('active', pageNumber === 2);
+    if(b3) b3.classList.toggle('active', pageNumber === 3);
+}
 </script>
 </body>
 </html>

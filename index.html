@@ -1588,23 +1588,27 @@ return (
         const pic1 = normalizePhone(pic1Raw === '-' ? '' : pic1Raw);
         const pic2 = normalizePhone(pic2Raw === '-' ? '' : pic2Raw);
 
-        const teksPesan = `Halo, kami dari *PT. POS INDONESIA (Persero)* \n` +
-                          `*Kantor Pos Ende 86300*.\n\n` +
-                          `*Nama Pelanggan:* ${globalNamaKorporat}\n` +
-                          `*ID Pelanggan :* ${targetIdPelanggan}\n\n` +
-                          `Berikut rincian tagihan pengiriman Anda:\n` +
-                          `Periode : ${namaBulanIndo[bulanDipilih]} ${tahunDipilih}\n` +
-                          `Total Kiriman : ${waSummary.totalItem} item\n` +
-                          `Biaya Kirim : Rp ${displayBiayaKirim}\n` +
-                          `Biaya Packing : Rp ${displayBiayaPacking}\n` +
-                          `*Total Tagihan Bulan ini : Rp ${displayTotalTagihan}*\n\n` +
-                          `Mohon untuk segera melakukan pembayaran ke rekening :\n` +
-                          `*BRI* : No Rek: 0024-01-001238-30-3 an. POS INDONESIA\n` +
-                          `*BRIVA* : 1394908130000 an. P088630000 ENDE\n` +
-                          `*BNI* :  54731889 an. DIVRE 8 KP ENDE\n` +
-                          `*MANDIRI* : 161-0000-86300-6 an. POS INDONESIA\n\n` +
-                          `Bukti transfer harap dikirimkan kembali melalui nomor WhatsApp ini atau ke PIC an. *Edison Leonard*, Whatsapp: *081339221840.*\n` +
-                          `Terima kasih.`;
+       const teksPesan = `Halo, kami dari *PT. POS INDONESIA (Persero)* \n` +
+                  `*Kantor Pos Ende 86300*.\n\n` +
+                  `*Nama Pelanggan:* ${globalNamaKorporat}\n` +
+                  `*ID Pelanggan :* ${targetIdPelanggan}\n\n` +
+                  `Berikut rincian tagihan pengiriman Anda:\n` +
+                  `Periode : ${namaBulanIndo[bulanDipilih]} ${tahunDipilih}\n` +
+                  `Total Kiriman : ${waSummary.totalItem} item\n` +
+                  `Biaya Kirim : Rp ${displayBiayaKirim}\n` +
+                  `Biaya Packing : Rp ${displayBiayaPacking}\n` +
+                  `*Total Tagihan Bulan ini : Rp ${displayTotalTagihan}*\n\n` +
+                  `Mohon untuk segera melakukan pembayaran ke rekening :\n` +
+                  `*BRI* : No Rek: 0024-01-001238-30-3 an. POS INDONESIA\n` +
+                  `*BRIVA* : 1394908130000 an. P088630000 ENDE\n` +
+                  `*BNI* :  54731889 an. DIVRE 8 KP ENDE\n` +
+                  `*MANDIRI* : 161-0000-86300-6 an. POS INDONESIA\n\n` +
+                  `Bukti transfer harap dikirimkan kembali melalui nomor WhatsApp ini atau ke PIC an. *Edison Leonard*, Whatsapp: *081339221840.*\n\n` +
+                  `*Catatan:*\n` +
+                  `a. Denda sebesar 1% (satu perseratus) dari invoice (tagihan) jika dilakukan pembayaran setelah 21 (dua puluh satu) hari sampai dengan 25 (dua puluh lima) hari setelah invoice (tagihan) diterima atau denda sebesar 2% (dua perseratus) dari invoice (tagihan) jika dilakukan pembayaran setelah 26 (dua puluh enam) hari sampai dengan 30 (tiga puluh) hari setelah invoice (tagihan) diterima.\n` +
+                  `b. Apabila tidak melunasi invoice (tagihan) sampai dengan 1 bulan sejak tanggal jatuh tempo tagihan maka mulai keesokan harinya pembayaran atas kiriman dilakukan secara tunai.\n` +
+                  `c. Apabila tidak bersedia secara tunai maka Kami berhak menolak dan menghentikan layanan pengiriman ini.\n\n` +
+                  `Terima kasih.`;
 
         // prefer PIC1, fallback PIC2, otherwise open generic chat
         try {

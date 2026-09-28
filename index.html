@@ -458,16 +458,21 @@
             *, *::before, *::after { box-sizing: border-box; }
             body { background-color: #fff; font-size: 8pt; line-height: 1.15; color: #000; padding: 0; margin: 0; width: 100%; }
             .control-panel, .no-print, .toast-container, .page-nav, .page-toggle, .page-nav-wrapper { display: none !important; }
-            /* Print Semua hanya Page 1 & 2 */
-            body:not(.print-page-1):not(.print-page-2) .page-1,
-            body:not(.print-page-1):not(.print-page-2) .page-2 { display:block !important; }
-            body:not(.print-page-1):not(.print-page-2) .page-3,
-            body:not(.print-page-1):not(.print-page-2) #additionalPage,
-            body:not(.print-page-1):not(.print-page-2) .additional-page { display:none !important; }
+            body:not(.print-page-1):not(.print-page-2):not(.print-page-3) .page-section { display: block !important; }
+            body.print-page-1 .page-section:not(.page-1),
+            body.print-page-2 .page-section:not(.page-2),
+            body.print-page-3 .page-section:not(.page-3) { display: none !important; }
+            body.print-page-1 .page-1,
+            body.print-page-2 .page-2,
+            body.print-page-3 .page-3 { display: block !important; }
+            .page-2, .page-3 { break-before: page; page-break-before: always; }
+            body.print-page-2 .page-2,
+            body.print-page-3 .page-3 { break-before: auto; page-break-before: auto; }
+            .page-1, .page-2 { break-inside: avoid; page-break-inside: avoid; }
 
 
             .report-container { box-shadow: none; margin: 0; padding: 0; width: 100% !important; max-width: 100% !important; min-width: 100% !important; }
-            .surat-container { box-shadow: none; margin: 0; padding: 0; width: 100% !important; min-height: auto; font-size: 10.5pt; page-break-before: always; }
+            .surat-container { box-shadow: none; margin: 0; padding: 0; width: 100% !important; min-height: auto; font-size: 10.5pt; page-break-before: auto; }
             .surat-header { grid-template-columns: 1fr 22mm; margin-bottom: 10mm; }
             .pos-logo-img { width: 34mm; }
             .surat-corner {
@@ -483,9 +488,8 @@
             body.print-page-1 .surat-container { display: none !important; }
             body.print-page-1 .report-container { display: block !important; }
             body.print-page-2 .report-container { display: none !important; }
-            body.print-page-2 .surat-container { display: block !important; page-break-before: auto; }
-            /* Hide additional page (page 3) when printing only page 2 */
-            body.print-page-2 .additional-page, body.print-page-2 #additionalPage { display: none !important; }
+            body.print-page-2 .surat-container { display: block !important; }
+            body.print-page-3 #additionalPage { display: block !important; }
             
             .header-title { padding: 6px 4px; font-size: 10pt; margin-bottom: 8px; background-color: #ffee55 !important; color: #000000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .header-meta-grid { margin-top: 6px; font-size: 8pt; row-gap: 1px; }
@@ -509,6 +513,13 @@
             .ttd-table td { font-size: 8pt; }
             .ttd-space { height: 45px; } /* Tinggi dipersempit agar muat 1 halaman namun ruang ttd fisik tetap ada */
             .nippos-text { font-size: 7.5pt; }
+
+            #additionalPage { max-width: none !important; margin: 0 !important; }
+            #additionalPage .table-responsive { overflow: visible !important; }
+            .additional-table { width: 100% !important; table-layout: fixed; font-size: 6.5pt; }
+            .additional-table th, .additional-table td { padding: 2px 3px; font-size: 6.5pt; white-space: normal; overflow-wrap: anywhere; }
+            .additional-table thead { display: table-header-group; }
+            .additional-table tr { break-inside: avoid; page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -617,6 +628,7 @@
                     <li><a class="dropdown-item" href="#" onclick="cetakKePdf('both'); return false;">Print Semua</a></li>
                     <li><a class="dropdown-item" href="#" onclick="cetakKePdf('page1'); return false;">Page 1</a></li>
                     <li><a class="dropdown-item" href="#" onclick="cetakKePdf('page2'); return false;">Page 2</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="cetakKePdf('page3'); return false;">Page 3</a></li>
                 </ul>
             </div>
             <button id="btnExportExcel" class="btn-custom-icon btn-sheets-icon" onclick="exportAdditionalToCSV()" title="Export Excel">
@@ -800,6 +812,7 @@
                     c. Apabila tidak bersedia secara tunai maka Kami berhak menolak dan menghentikan layanan pengiriman ini.
                 </div>
             </div>
+        </div>
             
         <div class="surat-section">
             <div>4</div>
@@ -814,7 +827,6 @@
             <div class="surat-sign-space"></div>
             <div class="surat-underline">Hannan</div>
             <div>Nippos.983390370</div>
-        </div>
         </div>
 </div>
 
@@ -1509,18 +1521,16 @@ return (
         const targetIdPelanggan = document.getElementById("selectIdPelanggan").value.trim().toUpperCase();
         let mmStr = (bulanDipilih + 1) < 10 ? '0' + (bulanDipilih + 1) : (bulanDipilih + 1);
         const judulAsli = document.title;
-        const suffix = printTarget === "page1" ? "Laporan" : (printTarget === "page2" ? "Surat_Tagihan" : "Laporan_dan_Surat");
+        const suffix = printTarget === "page1" ? "Laporan" : (printTarget === "page2" ? "Surat_Tagihan" : (printTarget === "page3" ? "Daftar_Pendapatan" : "Laporan_Surat_dan_Pendapatan"));
         document.title = `${mmStr}_${tahunDipilih}_${targetIdPelanggan}_${globalNamaKorporat}_${suffix}`;
-        document.body.classList.remove("print-page-1", "print-page-2");
+        document.body.classList.remove("print-page-1", "print-page-2", "print-page-3");
         if (printTarget === "page1") document.body.classList.add("print-page-1");
         if (printTarget === "page2") document.body.classList.add("print-page-2");
-        if (printTarget === "both") {
-            document.body.classList.remove("print-page-1", "print-page-2");
-        }
+        if (printTarget === "page3") document.body.classList.add("print-page-3");
         window.print();
         setTimeout(() => {
             document.title = judulAsli;
-            document.body.classList.remove("print-page-1", "print-page-2");
+            document.body.classList.remove("print-page-1", "print-page-2", "print-page-3");
         }, 1000);
     }
 
